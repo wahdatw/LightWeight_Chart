@@ -147,13 +147,13 @@ function App(props) {
 			console.log(pair)
 			let swapPrices = await getSwapPrices(startTime, pair)
 			let time_gap;
-			if(timeselect==60){
+			if(timeselect===60){
 				time_gap=3600
 			}
-			else if(timeselect==5){
+			else if(timeselect===5){
 				time_gap=300
 			}
-			else if(timeselect==15){
+			else if(timeselect===15){
 				time_gap=900
 			}
 			else{
