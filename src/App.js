@@ -251,7 +251,7 @@ export const ChartComponent = props => {
 
 
 	const chartContainerRef = useRef();
-	const myPriceFormatter = p => p.toFixed(7);
+	const myPriceFormatter = p => p.toFixed(10);
 	useEffect(
 		() => {
 			const handleResize = () => {
