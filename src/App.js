@@ -25,7 +25,7 @@ function App(props) {
 	const [pairToken1, setPairToken1] = useState(null);
 	const [graphData, setGraphData] = useState([]);
 	//  const time_gap = 600
-
+	console.log(pair);
 	const confirm = async () => {
 		if (isAddress(token0) && isAddress(token1)) {
 			const pairQuery = `
@@ -120,7 +120,7 @@ function App(props) {
 				}
 			}
 		`
-		console.log(PairDataQuery)
+		console.log(pair)
 		const data = await client.query(PairDataQuery).toPromise()
 		let swapDetails = data.data.swaps.map(swapDetail => {
 			let price = 0
@@ -175,6 +175,8 @@ function App(props) {
 					}
 					startTime += time_gap
 				}
+				console.log("swapPrices",swapPrices);
+				console.log((swapPrices))
 				swapPrices.map((swapPrice, index) => {
 					if (Number(swapPrice.timestamp) > startTime) {
 						let blankIndexesLength = Math.ceil((swapPrice.timestamp - startTime) / time_gap)
@@ -183,7 +185,9 @@ function App(props) {
 							startTime += time_gap
 							 console.log("push")
 						}
+					
 					}
+				return 0;
 				})
 			}
 			let endBlankIndexesLength = Math.floor((currentTime - result[result.length - 1].time) / time_gap)
