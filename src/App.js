@@ -169,7 +169,7 @@ function App(props) {
 				let startBlankIndexesLength = Math.ceil((swapPrices[0].timestamp - startTime) / time_gap)
 				for (let i = 0; i < startBlankIndexesLength; i++) {
 					if (startTime > Number(firstPrice.timestamp)) {
-						result.push({ time: startTime, value: 10000000000*firstPrice.price })
+						result.push({ time: startTime, value: firstPrice.price })
 					} else {
 						result.push({ time: startTime, value: 0 })
 					}
@@ -181,7 +181,7 @@ function App(props) {
 					if (Number(swapPrice.timestamp) > startTime) {
 						let blankIndexesLength = Math.ceil((swapPrice.timestamp - startTime) / time_gap)
 						for (let i = 0; i < blankIndexesLength; i++) {
-							result.push({ time: startTime, value: 10000000000*swapPrices[index - 1].price })
+							result.push({ time: startTime, value: swapPrices[index - 1].price })
 							startTime += time_gap
 							  console.log("push")
 							
@@ -214,7 +214,7 @@ function App(props) {
 			<ChartComponent {...props} data={graphData} ></ChartComponent>
 			<div>
 				
-				<b style={{marginLeft:"1800px"}}>10e-10</b>
+				
 			</div>
 			<div style={{ display: "flex" }}>
 				<div style={{ width: "60%" }}>
@@ -257,7 +257,7 @@ export const ChartComponent = props => {
 
 
 	const chartContainerRef = useRef();
-	const myPriceFormatter = p => p.toFixed(2);
+	const myPriceFormatter = p => p.toFixed(12);
 	useEffect(
 		() => {
 			const handleResize = () => {
