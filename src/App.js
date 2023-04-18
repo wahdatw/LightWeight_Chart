@@ -50,9 +50,9 @@ function App(props) {
 			
 			const data = await client.query(pairQuery).toPromise()
 			if (data) {
-				console.log(data);
+				// console.log(data);
 				let pair_id = data.data.pairs[0].id 
-				console.log(pair_id);
+				// console.log(pair_id);
 				setPair(pair_id)
 				setPairToken0(data.data.pairs[0].token0)
 				setPairToken1(data.data.pairs[0].token1)
@@ -85,7 +85,7 @@ function App(props) {
 	
 		if (data.data.swaps[0]) {
 			let swapDetail = data.data.swaps[0]
-			console.log(swapDetail)
+			// console.log(swapDetail)
 			let price = 0
 			if (token0.toLocaleLowerCase() === pair.token0.id.toLocaleLowerCase()) {
 				price = Number(swapDetail.amount0In) > 0 ? swapDetail.amount1Out / swapDetail.amount0In * Math.pow(10, (pair.token0.decimals - pair.token1.decimals)) : swapDetail.amount1In / swapDetail.amount0Out * Math.pow(10, (pair.token0.decimals - pair.token1.decimals))
@@ -143,8 +143,8 @@ function App(props) {
 		if (isAddress(pair.id)) {
 			let currentTime = (Date.now() / 1000).toFixed(0);
 			let startTime = currentTime - 2728000;
-			console.log(startTime)
-			console.log(pair)
+			// console.log(startTime)
+			// console.log(pair)
 			let swapPrices = await getSwapPrices(startTime, pair)
 			let time_gap;
 			if(timeselect===60){
@@ -162,40 +162,41 @@ function App(props) {
 			
 			// get first price
 			let firstPrice = await getSwapPrice(startTime, pair)
-			console.log(swapPrices)
+			// console.log(swapPrices)
 
 			let result = [];
 			if (swapPrices.length) {
 				let startBlankIndexesLength = Math.ceil((swapPrices[0].timestamp - startTime) / time_gap)
 				for (let i = 0; i < startBlankIndexesLength; i++) {
 					if (startTime > Number(firstPrice.timestamp)) {
-						result.push({ time: startTime, value: firstPrice.price })
+						result.push({ time: startTime, value: 10000000000*firstPrice.price })
 					} else {
 						result.push({ time: startTime, value: 0 })
 					}
 					startTime += time_gap
 				}
-				console.log("swapPrices",swapPrices);
-				console.log((swapPrices))
+				// console.log("swapPrices",swapPrices);
+				// console.log((swapPrices))
 				swapPrices.map((swapPrice, index) => {
 					if (Number(swapPrice.timestamp) > startTime) {
 						let blankIndexesLength = Math.ceil((swapPrice.timestamp - startTime) / time_gap)
 						for (let i = 0; i < blankIndexesLength; i++) {
-							result.push({ time: startTime, value: swapPrices[index - 1].price })
+							result.push({ time: startTime, value: 10000000000*swapPrices[index - 1].price })
 							startTime += time_gap
-							 console.log("push")
-						}
+							  console.log("push")
+							
+							}
 					
 					}
 				return 0;
 				})
 			}
 			let endBlankIndexesLength = Math.floor((currentTime - result[result.length - 1].time) / time_gap)
-			for (let i = 0; i < endBlankIndexesLength; i++) {
+			for (let i = 0; i < endBlankIndexesLength; i++) {			
 				result.push({ time: startTime, value: result[result.length - 1].value })
 				startTime += time_gap
 			}
-			console.log(result);
+			 console.log("result",result);
 			setGraphData(result)
 		}
 	}
@@ -209,10 +210,11 @@ function App(props) {
 	}
 	return (
 		<div className="App">
-			<h1>{renderTokenPairName()}</h1>
+		<h1>{renderTokenPairName()}</h1>
 			<ChartComponent {...props} data={graphData} ></ChartComponent>
 			<div>
-				<b>Second</b>
+				
+				<b style={{marginLeft:"1800px"}}>10e-10</b>
 			</div>
 			<div style={{ display: "flex" }}>
 				<div style={{ width: "60%" }}>
@@ -255,7 +257,7 @@ export const ChartComponent = props => {
 
 
 	const chartContainerRef = useRef();
-	const myPriceFormatter = p => p.toFixed(10);
+	const myPriceFormatter = p => p.toFixed(2);
 	useEffect(
 		() => {
 			const handleResize = () => {
