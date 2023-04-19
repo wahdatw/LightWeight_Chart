@@ -4,8 +4,13 @@ import { createChart, ColorType } from 'lightweight-charts';
 import React, { useEffect, useRef, useState } from 'react';
 import { createClient, cacheExchange, fetchExchange } from 'urql'
 import { isAddress } from "ethers";
+// import Web3 from "web3"
+// import pairAbi from "./abi/pair.json"
 
 const APIURL = 'https://api.thegraph.com/subgraphs/name/hwakstar/exchange_subgraph';
+// const rpcurl = "https://eth-goerli.public.blastapi.io";
+
+// let web3 = new Web3(rpcurl)
 
 const client = createClient({
 	url: APIURL,
@@ -51,9 +56,8 @@ function App(props) {
 
 			const data = await client.query(pairQuery).toPromise()
 			if (data) {
-				// console.log(data);
-				let pair_id = data.data.pairs[0].id
-				// console.log(pair_id);
+				
+				let pair_id = data.data.pairs[0].id				
 				setPair(pair_id)
 				setPairToken0(data.data.pairs[0].token0)
 				setPairToken1(data.data.pairs[0].token1)
@@ -121,7 +125,7 @@ function App(props) {
 				}
 			}
 		`
-		console.log(pair)
+	
 		const data = await client.query(PairDataQuery).toPromise()
 		let swapDetails = data.data.swaps.map(swapDetail => {
 			let price = 0
@@ -144,12 +148,11 @@ function App(props) {
 		if (isAddress(pair.id)) {
 			let currentTime = (Date.now() / 1000).toFixed(0);
 			let startTime = currentTime - 2728000;
-			// console.log(startTime)
-			// console.log(pair)
+			
 			let swapPrices = await getSwapPrices(startTime, pair)
 			let time_gap;
 			console.log("time_select", timeselect)
-			if (timeselect === 60) {
+			if (timeselect ===60) {
 				time_gap = 3600
 			}
 			else if (timeselect === 5) {
@@ -194,27 +197,39 @@ function App(props) {
 							temp_result.push({ time: startTime, value: swapPrices[index - 1].price })
 
 							startTime += time_gap
-							console.log("push")
+						
 
 						}
 
 					}
+					result[result.length - 1].value = swapPrice.price
+					temp_result[temp_result.length - 1].value = swapPrice.price
 					return 0;
 				})
 			}
 			let endBlankIndexesLength = Math.floor((currentTime - result[result.length - 1].time) / time_gap)
 			for (let i = 0; i < endBlankIndexesLength; i++) {
-				console.log("endprice", 100000 * result[result.length - 1].value)
+			
 				result.push({ time: startTime, value: result[result.length - 1].value * 1 })
 				temp_result.push({ time: startTime, value: result[result.length - 1].value * 1 })
 
 				startTime += time_gap
 			}
-			console.log("result", result.length);
-			console.log(result[45000].value)
-			
-			for (let j = 0; j < result.length; j++) {
-				
+
+			// let pairContract = new web3.eth.Contract(pairAbi, pair.id)
+			// let reserves = await pairContract.methods.getReserves().call()
+			// if (token0.toLocaleLowerCase() === pair.token0.id.toLocaleLowerCase()) {
+				// let currentPrice = (reserves[1] / Math.pow(10, pair.token1.decimals)) / (reserves[0] / Math.pow(10, pair.token0.decimals))
+				// result[result.length - 1].value = currentPrice
+				// temp_result[temp_result.length - 1].value = currentPrice
+			// } else {
+				// let currentPrice = (reserves[0] / Math.pow(10, pair.token0.decimals)) / (reserves[1] / Math.pow(10, pair.token1.decimals))
+				// result[result.length - 1].value = currentPrice
+				// temp_result[temp_result.length - 1].value = currentPrice
+			// }
+		
+		
+			for (let j = 0; j < result.length; j++) {		
 			
 				
 				while (result[j].value < 1 && result[j].value !== 0) {
@@ -223,16 +238,16 @@ function App(props) {
 
 				}
 				
-				result[j].value = result[j].value / 10;
-				
+				// result[j].value = result[j].value / 10;		
 			
 
 
 			}
+			console.log(result);
+			console.log(temp_result[45000].value)
 			multi=temp_result[45000].value/result[45000].value;
-			console.log(temp_result[45000].value/result[45000].value,"Hi")
-			
-			console.log(result[45000].value)
+			console.log(multi,"Hi")			
+		   console.log(result[45000].value)
 			setGraphData(result)
 
 		}
@@ -299,7 +314,7 @@ export const ChartComponent = props => {
 			// 	divide*=10;
 			// }
 			// console.log(divide)
-		return (p*multi).toFixed(12);
+		return (p*multi).toFixed(14);
 	}
 	useEffect(
 		() => {
