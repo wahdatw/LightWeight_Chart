@@ -12,19 +12,20 @@ const client = createClient({
 	exchanges: [cacheExchange, fetchExchange]
 })
 
-
+let multi=0;
 
 function App(props) {
 
 
 	const [token0, setToken0] = useState("0xae8dc6d964c2ac786bed908e5a1305acf7d2330a");
 	const [token1, setToken1] = useState("0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6");
-	const [timeselect,setTimeselect]=useState("");
+	const [timeselect, setTimeselect] = useState("");
 	const [pair, setPair] = useState("");
 	const [pairToken0, setPairToken0] = useState(null);
 	const [pairToken1, setPairToken1] = useState(null);
 	const [graphData, setGraphData] = useState([]);
 	//  const time_gap = 600
+	
 	console.log(pair);
 	const confirm = async () => {
 		if (isAddress(token0) && isAddress(token1)) {
@@ -47,11 +48,11 @@ function App(props) {
 				}
 			  }
 			`
-			
+
 			const data = await client.query(pairQuery).toPromise()
 			if (data) {
 				// console.log(data);
-				let pair_id = data.data.pairs[0].id 
+				let pair_id = data.data.pairs[0].id
 				// console.log(pair_id);
 				setPair(pair_id)
 				setPairToken0(data.data.pairs[0].token0)
@@ -61,9 +62,9 @@ function App(props) {
 		} else {
 			alert("invalid address")
 		}
-		
+
 	}
-	
+
 	const getSwapPrice = async (startTime, pair) => {
 		const PairDataQuery = `
 			query {
@@ -82,7 +83,7 @@ function App(props) {
 			}
 		`
 		const data = await client.query(PairDataQuery).toPromise()
-	
+
 		if (data.data.swaps[0]) {
 			let swapDetail = data.data.swaps[0]
 			// console.log(swapDetail)
@@ -147,31 +148,38 @@ function App(props) {
 			// console.log(pair)
 			let swapPrices = await getSwapPrices(startTime, pair)
 			let time_gap;
-			if(timeselect===60){
-				time_gap=3600
+			console.log("time_select", timeselect)
+			if (timeselect === 60) {
+				time_gap = 3600
 			}
-			else if(timeselect===5){
-				time_gap=300
+			else if (timeselect === 5) {
+				time_gap = 300
 			}
-			else if(timeselect===15){
-				time_gap=900
+			else if (timeselect === 15) {
+				time_gap = 900
 			}
-			else{
-				time_gap=60
+			else {
+				time_gap = 60
 			}
-			
+			console.log(time_gap)
 			// get first price
 			let firstPrice = await getSwapPrice(startTime, pair)
 			// console.log(swapPrices)
 
 			let result = [];
+			let temp_result=[];
 			if (swapPrices.length) {
 				let startBlankIndexesLength = Math.ceil((swapPrices[0].timestamp - startTime) / time_gap)
 				for (let i = 0; i < startBlankIndexesLength; i++) {
 					if (startTime > Number(firstPrice.timestamp)) {
+
+						// console.log("first price",100000*firstPrice.price)
 						result.push({ time: startTime, value: firstPrice.price })
+						temp_result.push({ time: startTime, value: firstPrice.price })
+
 					} else {
 						result.push({ time: startTime, value: 0 })
+						temp_result.push({ time: startTime, value: 0 })
 					}
 					startTime += time_gap
 				}
@@ -181,23 +189,52 @@ function App(props) {
 					if (Number(swapPrice.timestamp) > startTime) {
 						let blankIndexesLength = Math.ceil((swapPrice.timestamp - startTime) / time_gap)
 						for (let i = 0; i < blankIndexesLength; i++) {
+							// console.log("swap", 100000*swapPrices[index - 1].price)
 							result.push({ time: startTime, value: swapPrices[index - 1].price })
+							temp_result.push({ time: startTime, value: swapPrices[index - 1].price })
+
 							startTime += time_gap
-							  console.log("push")
-							
-							}
-					
+							console.log("push")
+
+						}
+
 					}
-				return 0;
+					return 0;
 				})
 			}
 			let endBlankIndexesLength = Math.floor((currentTime - result[result.length - 1].time) / time_gap)
-			for (let i = 0; i < endBlankIndexesLength; i++) {			
-				result.push({ time: startTime, value: result[result.length - 1].value })
+			for (let i = 0; i < endBlankIndexesLength; i++) {
+				console.log("endprice", 100000 * result[result.length - 1].value)
+				result.push({ time: startTime, value: result[result.length - 1].value * 1 })
+				temp_result.push({ time: startTime, value: result[result.length - 1].value * 1 })
+
 				startTime += time_gap
 			}
-			 console.log("result",result);
+			console.log("result", result.length);
+			console.log(result[45000].value)
+			
+			for (let j = 0; j < result.length; j++) {
+				
+			
+				
+				while (result[j].value < 1 && result[j].value !== 0) {
+					
+					result[j].value = result[j].value * 10;
+
+				}
+				
+				result[j].value = result[j].value / 10;
+				
+			
+
+
+			}
+			multi=temp_result[45000].value/result[45000].value;
+			console.log(temp_result[45000].value/result[45000].value,"Hi")
+			
+			console.log(result[45000].value)
 			setGraphData(result)
+
 		}
 	}
 	const renderTokenPairName = () => {
@@ -210,11 +247,11 @@ function App(props) {
 	}
 	return (
 		<div className="App">
-		<h1>{renderTokenPairName()}</h1>
+			<h1>{renderTokenPairName()}</h1>
 			<ChartComponent {...props} data={graphData} ></ChartComponent>
 			<div>
-				
-				
+
+
 			</div>
 			<div style={{ display: "flex" }}>
 				<div style={{ width: "60%" }}>
@@ -224,12 +261,12 @@ function App(props) {
 				<div>
 					<label>Token 1 -</label>
 					<input type="text" value={token1} onChange={(e) => setToken1(e.target.value)} style={{ width: "330px" }} />
-					
-					<select name="timeselect"  value={timeselect} onChange={(e)=>{setTimeselect(e.target.value)}} style={{ marginLeft: "20px" }}>
+
+					<select name="timeselect" value={timeselect} onChange={(e) => { setTimeselect(e.target.value) }} style={{ marginLeft: "20px" }}>
 						<option value="1">1 minute</option>
 						<option value="5">5 minutes</option>
 						<option value="15">15 minutes</option>
-						<option value="60">1 hour</option>						
+						<option value="60">1 hour</option>
 					</select>
 					<button type='button' onClick={() => confirm()} style={{ marginLeft: "10px" }}>Confirm</button>
 
@@ -253,32 +290,58 @@ export const ChartComponent = props => {
 			areaTopColor = '#2962FF',
 			areaBottomColor = 'rgba(41, 98, 255, 0.28)',
 		} = {},
+		
 	} = props;
 
-
 	const chartContainerRef = useRef();
-	const myPriceFormatter = p => p.toFixed(12);
+	const myPriceFormatter = (p) => {
+			// for(let m=0;m<mult-1;m++){
+			// 	divide*=10;
+			// }
+			// console.log(divide)
+		return (p*multi).toFixed(12);
+	}
 	useEffect(
 		() => {
 			const handleResize = () => {
 				chart.applyOptions({ width: chartContainerRef.current.clientWidth });
-			};
 
+			};
 			const chart = createChart(chartContainerRef.current, {
 				layout: {
 					background: { type: ColorType.Solid, color: backgroundColor },
 					textColor,
 				},
+
 				width: chartContainerRef.current.clientWidth,
 				height: 400,
+
 			});
-			chart.timeScale().fitContent();
+			chart.addLineSeries({
+				autoscaleInfoProvider: () => ({
+					priceRange: {
+						minValue: 0,
+						maxValue: 100,
+					},
+					margins: {
+						above: 0,
+						below: 0,
+					},
+				}),
+			});
+			// Adjust the options for the priceScale of the mainSeries
+
 			chart.applyOptions({
+				autoScale: false,
+
 				localization: {
 					priceFormatter: myPriceFormatter,
 				},
+
 			});
-			// chart.applyOptions({})
+			chart.timeScale().fitContent();
+
+
 			const newSeries = chart.addAreaSeries({ lineColor, topColor: areaTopColor, bottomColor: areaBottomColor });
 			newSeries.setData(data);
 
